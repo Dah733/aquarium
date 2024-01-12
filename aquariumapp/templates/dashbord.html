@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aquarium Dashboard</title>
+
+    <!-- Include Bootstrap for styling -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+
+    <div class="container mt-4">
+        <h1>Aquarium Dashboard</h1>
+    
+        <!-- Table to display sensor values with fixed example values -->
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Parameter</th>
+                    <th>Value</th>
+                    <th>Indicator</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>pH</td>
+                    <td id="ph-value">7.2</td> <!-- Fixed example value for pH -->
+                    <td id="ph-indicator" style="background-color: green;"></td>
+                </tr>
+                <tr>
+                    <td>Nitrites</td>
+                    <td id="nitrites-value">10.5</td> <!-- Fixed example value for Nitrites -->
+                    <td id="nitrites-indicator" style="background-color: yellow;"></td>
+                </tr>
+                <!-- Add more rows for other parameters with fixed example values -->
+            </tbody>
+        </table>
+    </div>
+{% comment %} 
+<div class="container mt-4">
+    <h1>Aquarium Dashboard</h1>
+
+    <!-- Table to display sensor values -->
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Parameter</th>
+                <th>Value</th>
+                <th>Indicator</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>pH</td>
+                <td id="ph-value">Loading...</td>
+                <td id="ph-indicator"></td>
+            </tr>
+            <tr>
+                <td>Nitrites</td>
+                <td id="nitrites-value">Loading...</td>
+                <td id="nitrites-indicator"></td>
+            </tr>
+            <!-- Add more rows for other parameters -->
+        </tbody>
+    </table>
+</div> {% endcomment %}
+
+<!-- JavaScript to update values and indicators -->
+<script>
+    // Function to update values and indicators
+    function updateValuesAndIndicators() {
+        // Use AJAX to fetch real-time sensor data from Django
+        fetch('/aquarium/get_real_time_sensor_data/')
+            .then(response => response.json())
+            .then(data => {
+                // Update pH value and indicator
+                document.getElementById('ph-value').innerText = data.pH;
+                document.getElementById('ph-indicator').style.backgroundColor = getColorIndicator(data.pH);
+
+                // Update Nitrites value and indicator
+                document.getElementById('nitrites-value').innerText = data.nitrites;
+                document.getElementById('nitrites-indicator').style.backgroundColor = getColorIndicator(data.nitrites);
+
+                // Add more lines to update other parameters
+            })
+            .catch(error => console.error('Error fetching sensor data:', error));
+    }
+
+    // Function to determine color indicator based on parameter value
+    function getColorIndicator(value) {
+        if (value < 5) {
+            return 'red';   // Critical level
+        } else if (value < 8) {
+            return 'yellow';  // Warning level
+        } else {
+            return 'green';   // Safe level
+        }
+    }
+
+    // Update values and indicators initially and set interval for periodic updates
+    updateValuesAndIndicators();
+    setInterval(updateValuesAndIndicators, 5000);  // Update every 5 seconds
+</script>
+
+</body>
+</html>
