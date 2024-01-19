@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aquarium Dashboard</title>
+     <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-messaging.js"></script>
+    <!-- Include Bootstrap for styling -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <a class="navbar-brand" href="#">Aquarium Dashboard</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarNav">
+    <ul class="navbar-nav">
+      <li>Métrique</li>
+      <li>Tests chimique</li>
+    </ul>
+  </div>
+</nav>
+
+<!-- Main content -->
+<div class="container mt-4">
+    {% block content %}{% endblock %}
+</div>
+  <script type="module">
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.2/firebase-app.js";
+    import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.7.2/firebase-messaging.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.2/firebase-analytics.js";
+    // TODO: Add SDKs for Firebase products that you want to use
+    // https://firebase.google.com/docs/web/setup#available-libraries
+  
+    // Your web app's Firebase configuration
+    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+    const firebaseConfig = {
+      apiKey: "AIzaSyAZwYMKiwWzBmQSMc4v4hbF6rjcNCDBXVs",
+      authDomain: "aquarium-16634.firebaseapp.com",
+      projectId: "aquarium-16634",
+      storageBucket: "aquarium-16634.appspot.com",
+      messagingSenderId: "79360301551",
+      appId: "1:79360301551:web:5ed19cd2cbe4986cfefe1a",
+      measurementId: "G-5DY4YQWMEB"
+    };
+  
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+  
+    // Initialize Firebase
+    {% comment %} const app = initializeApp(firebaseConfig);
+
+      const messaging = getMessaging(app);
+      console.log(getToken())
+      getToken(messaging, { vapidKey: 'BHdoXT1hNbsnC9qQ6mryn21DZF-4doxIbqD3axBctDeN2WXRDEynnOTmboMUvbJO2qekDXinhIPK5-hIO9evVoM' }).then((currentToken) => {
+      if (currentToken) {
+        console.log(currentToken)
+      } else {
+        console.log('No registration token available. Request permission to generate one.');
+    
+  }
+}).catch((err) => {
+  console.log('An error occurred while retrieving token. ', err);
+});
+
+
+  Notification
+   .requestPermission()
+   .then((permission) => {
+    if (permission === 'granted') {
+      console.log('Notification permission granted.');
+      }
+  })
+   .catch(function (err) {
+   console.log("Unable to get permission to notify.", err);
+ });
+
+
+  onMessage((payload) => {
+  console.log('Message received. ', payload);
+ 
+}); {% endcomment %}
+
+
+//        const analytics = getAnalytics(app);
+const messaging = getMessaging(app);
+
+  // Don't forget your vapidKey here
+  getToken(messaging, { vapidKey: "BHdoXT1hNbsnC9qQ6mryn21DZF-4doxIbqD3axBctDeN2WXRDEynnOTmboMUvbJO2qekDXinhIPK5-hIO9evVoM" })
+      .then((t) => {
+        console.log( "Token is " + t);
+      })
+      .catch(function (err) {
+          console.log("Didn't get notification permission", err);
+      });
+
+  onMessage(messaging, (payload) => {
+      console.log("Message received. ", JSON.stringify(payload));
+  });
+
+</script>
+<!-- Include Bootstrap and other JS scripts at the end for better performance -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+</body>
+</html>

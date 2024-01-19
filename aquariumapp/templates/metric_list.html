@@ -1,0 +1,81 @@
+<!-- aquariumapp/templates/aquariumapp/metric_list.html -->
+{% extends 'base.html' %}
+{% block content %}
+  <h1 class="mt-4">Métriques</h1>
+  
+  <!-- Table with colored metrics -->
+  <div class="table-responsive">
+    <table class="table table-striped table-bordered table-hover">
+      <thead class="thead-dark">
+        <tr>
+          <th>Timestamp</th>
+          <th>Température de l'eau (°C)</th>
+          <th>Température de l'air (°C)</th>
+          <th>Débit eau filtre</th>
+          <th>pH</th>
+          <th>Turbidité de l'eau</th>
+          <th>Capteur de luminosité</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for metric in colored_metrics %}
+          <tr>
+            <td>{{ metric.timestamp }}</td>
+            <td>{{ metric.water_temperature }}</td>
+            <td>{{ metric.air_temperature }}</td>
+            <td>{{ metric.water_filter_flow }}</td>
+            <td>{{ metric.pH }}</td>
+            <td>{{ metric.water_turbidity }}</td>
+            <td class="{{ metric.intensity_color }}">{{ metric.light_intensity }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Graphs for the evolution of metrics -->
+  <div class="container mt-4">
+    <h2>Évolution des Métriques</h2>
+    <canvas id="temperature-chart" width="400" height="200"></canvas>
+    <canvas id="ph-chart" width="400" height="200"></canvas>
+    <!-- Add more chart canvases for other metrics -->
+  </div>
+
+  <!-- JavaScript for charts using Chart.js library -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    // Extract data for temperature and pH for the charts
+    const timestamps = {{ timestamps_json|safe }};
+    const temperatures = {{ temperatures_json|safe }};
+    const pHValues = {{ ph_values_json|safe }};
+
+    // Temperature chart
+    var tempChart = new Chart(document.getElementById('temperature-chart').getContext('2d'), {
+      type: 'line',
+      data: {
+        labels: timestamps,
+        datasets: [{
+          label: 'Température de l\'eau (°C)',
+          borderColor: 'rgb(75, 192, 192)',
+          data: temperatures,
+          fill: false,
+        }],
+      },
+    });
+
+    // pH chart
+    var pHChart = new Chart(document.getElementById('ph-chart').getContext('2d'), {
+      type: 'line',
+      data: {
+        labels: timestamps,
+        datasets: [{
+          label: 'pH',
+          borderColor: 'rgb(255, 99, 132)',
+          data: pHValues,
+          fill: false,
+        }],
+      },
+    });
+    // Add more charts for other metrics
+  </script>
+{% endblock %}

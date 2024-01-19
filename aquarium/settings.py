@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 
 from pathlib import Path
 import os
+from firebase_admin import initialize_app
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,8 +27,8 @@ SECRET_KEY = 'django-insecure-#62%k#+f%0iaau0a&q4hrv91@$+!b8jd)w-uj&c#wi#hjxczsu
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['aquarium-production.up.railway.app']
-CSRF_TRUSTED_ORIGINS = ['https://aquarium-production.up.railway.app']
+ALLOWED_HOSTS = ['aquarium-production.up.railway.app','127.0.0.1']
+CSRF_TRUSTED_ORIGINS = ['https://aquarium-production.up.railway.app','http://127.0.0.1']
 
 
 # Application definition
@@ -39,7 +40,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'aquariumapp'
+    'aquariumapp',
+    "fcm_django"
+    # "push_notifications"
 ]
 
 MIDDLEWARE = [
@@ -102,6 +105,30 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# PUSH_NOTIFICATIONS_SETTINGS = {
+        # "FCM_API_KEY": "dh6hXu0AjYDoouIV3FYbwfqKJHnyyMRU2rCIc7s4vtgs",
+        # "GCM_API_KEY": "[your api key]",
+        # "APNS_CERTIFICATE": "/path/to/your/certificate.pem",
+# }
+
+FIREBASE_APP = initialize_app()
+# To learn more, visit the docs here:
+# https://cloud.google.com/docs/authentication/getting-started>
+
+FCM_DJANGO_SETTINGS = {
+     # an instance of firebase_admin.App to be used as default for all fcm-django requests
+     # default: None (the default Firebase app)
+    "DEFAULT_FIREBASE_APP": None,
+     # default: _('FCM Django')
+    "APP_VERBOSE_NAME": "_('Aquarium')",
+     # true if you want to have only one active device per registered user at a time
+     # default: False
+    "ONE_DEVICE_PER_USER": True,
+     # devices to which notifications cannot be sent,
+     # are deleted upon receiving error response from FCM
+     # default: False
+    "DELETE_INACTIVE_DEVICES": True,
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
