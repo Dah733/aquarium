@@ -10,5 +10,5 @@ urlpatterns = [
     path('chemical-tests/', ChemicalTestView.as_view(), name='chemical-test-list'),
     path('alert-settings/', AlertSettingView.as_view(), name='alert-setting-list'),
      path('send/' , send),
-    path('firebase-messaging-sw.js',showFirebaseJS,name="show_firebase_js"),
+    path('firebase-messaging-sw.js',showFirebaseJS,name="show_firebase_js"), path('save-fcm-token/', save_fcm_token, name='save_fcm_token'),
 ]

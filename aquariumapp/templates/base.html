@@ -53,49 +53,34 @@
     // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const analytics = getAnalytics(app);
-  
-    // Initialize Firebase
-    {% comment %} const app = initializeApp(firebaseConfig);
-
-      const messaging = getMessaging(app);
-      console.log(getToken())
-      getToken(messaging, { vapidKey: 'BHdoXT1hNbsnC9qQ6mryn21DZF-4doxIbqD3axBctDeN2WXRDEynnOTmboMUvbJO2qekDXinhIPK5-hIO9evVoM' }).then((currentToken) => {
-      if (currentToken) {
-        console.log(currentToken)
-      } else {
-        console.log('No registration token available. Request permission to generate one.');
-    
-  }
-}).catch((err) => {
-  console.log('An error occurred while retrieving token. ', err);
-});
 
 
-  Notification
-   .requestPermission()
-   .then((permission) => {
-    if (permission === 'granted') {
-      console.log('Notification permission granted.');
+    // Request notification permission
+    Notification.requestPermission().then((permission) => {
+      if (permission === 'granted') {
+          console.log('Notification permission granted.');
       }
-  })
-   .catch(function (err) {
-   console.log("Unable to get permission to notify.", err);
- });
+    }).catch((err) => {
+        console.log("Unable to get permission to notify.", err);
+    });
 
+  const messaging = getMessaging(app);
 
-  onMessage((payload) => {
-  console.log('Message received. ', payload);
- 
-}); {% endcomment %}
-
-
-//        const analytics = getAnalytics(app);
-const messaging = getMessaging(app);
-
-  // Don't forget your vapidKey here
   getToken(messaging, { vapidKey: "BHdoXT1hNbsnC9qQ6mryn21DZF-4doxIbqD3axBctDeN2WXRDEynnOTmboMUvbJO2qekDXinhIPK5-hIO9evVoM" })
       .then((t) => {
-        console.log( "Token is " + t);
+        console.log( "Token is:\n " + t);
+         // Send the token to the Django view using an AJAX request
+         fetch('/save-fcm-token/', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': '{{ csrf_token }}', 
+          },
+          body: JSON.stringify({ token: t }),
+      })
+      .then(response => response.json())
+      .then(data => console.log('Token sent to server:', data))
+      .catch(error => console.error('Error sending token to server:', error));
       })
       .catch(function (err) {
           console.log("Didn't get notification permission", err);
@@ -106,6 +91,8 @@ const messaging = getMessaging(app);
   });
 
 </script>
+
+<p id="fcmToken"></p>
 <!-- Include Bootstrap and other JS scripts at the end for better performance -->
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>

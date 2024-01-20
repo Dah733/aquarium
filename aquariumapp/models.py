@@ -25,3 +25,9 @@ class ChemicalTest(models.Model):
 class AlertSetting(models.Model):
     parameter = models.CharField(max_length=255)
     threshold = models.FloatField()
+
+
+class FCMToken(models.Model):
+    token = models.CharField(max_length=255, unique=True)
+    def __str__(self):
+        return self.token

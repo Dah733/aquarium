@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-from .models import SensorData
+from .models import SensorData, FCMToken
 import json
 import requests
 from django.views.generic import ListView
@@ -10,7 +10,7 @@ from firebase_admin.messaging import Message, Notification
 from fcm_django.models import FCMDevice
 
 def send_notification(registration_ids , message_title , message_desc):
-    fcm_api = ""
+    fcm_api = "AAAAEno-Ge8:APA91bH0_vKu85-LpVKscoPAQqFJ1PNJvOAHuMh8Qx7VDmJBVmExMV9jIpNoKQ3OYT81_t-15AlRLCNkEwvKIUDOwQI9MAOIpwUqDmFfKtDoSQBjGTp7kSWHigCdTdxHsN0X_vhRCQEN"
     url = "https://fcm.googleapis.com/fcm/send"
     
     headers = {
@@ -32,22 +32,25 @@ def send_notification(registration_ids , message_title , message_desc):
     result = requests.post(url,  data=json.dumps(payload), headers=headers )
     print(result.json())
 
+
 def send(request):
-    resgistration  = [
-    ]
-    send_notification(resgistration , 'Code Keen added a new video' , 'Code Keen new video alert')
-    return HttpResponse("sent")
+    registration_ids = FCMToken.objects.values_list('token', flat=True)
+    if registration_ids:
+        send_notification(list(registration_ids), 'Code Keen added a new video', 'Code Keen new video alert')
+        return HttpResponse("sent")
+    else:
+        return HttpResponse("No registration IDs found")
 
 def home(request):
     return render(request, 'index.html')
 
 def dashbord(request):
-    Message(
-    notification=Notification(title="title", body="text", image="url"),
-    )
-    device = FCMDevice.objects.all().first()
-    print(device)
-    device.send_message(Message(data={...}))
+    # Message(
+    # notification=Notification(title="title", body="text", image="url"),
+    # )
+    # device = FCMDevice.objects.all().first()
+    # print(device)
+    # device.send_message(Message(data={...}))
     return render(request, 'dashbord.html')
 
 def get_real_time_sensor_data(request):
@@ -144,3 +147,17 @@ def showFirebaseJS(request):
 
     return HttpResponse(data,content_type="text/javascript")
 
+@csrf_exempt
+def save_fcm_token(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body.decode('utf-8'))
+            token = data.get('token')
+            # Save or replace the token using the FCMToken model
+            FCMToken.objects.update_or_create(token=token)
+
+            return JsonResponse({'status': 'success', 'message': 'Token saved successfully'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)})
+
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method'})
