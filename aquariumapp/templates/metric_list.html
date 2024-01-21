@@ -36,9 +36,7 @@
   <!-- Graphs for the evolution of metrics -->
   <div class="container mt-4">
     <h2>Évolution des Métriques</h2>
-    <canvas id="temperature-chart" width="400" height="200"></canvas>
-    <canvas id="ph-chart" width="400" height="200"></canvas>
-    <!-- Add more chart canvases for other metrics -->
+    <canvas id="combined-chart" width="400" height="200"></canvas>
   </div>
 
   <!-- JavaScript for charts using Chart.js library -->
@@ -48,34 +46,43 @@
     const timestamps = {{ timestamps_json|safe }};
     const temperatures = {{ temperatures_json|safe }};
     const pHValues = {{ ph_values_json|safe }};
-
-    // Temperature chart
-    var tempChart = new Chart(document.getElementById('temperature-chart').getContext('2d'), {
-      type: 'line',
-      data: {
-        labels: timestamps,
-        datasets: [{
+    const waterFilterFlowValues = {{ water_filter_flow_values_json|safe }};
+    const waterTurbidityValues = {{ water_turbidity_values_json|safe }};
+  
+     // Combined chart
+  var combinedChart = new Chart(document.getElementById('combined-chart').getContext('2d'), {
+    type: 'line',
+    data: {
+      labels: timestamps,
+      datasets: [
+        {
           label: 'Température de l\'eau (°C)',
           borderColor: 'rgb(75, 192, 192)',
           data: temperatures,
           fill: false,
-        }],
-      },
-    });
-
-    // pH chart
-    var pHChart = new Chart(document.getElementById('ph-chart').getContext('2d'), {
-      type: 'line',
-      data: {
-        labels: timestamps,
-        datasets: [{
+        },
+        {
           label: 'pH',
           borderColor: 'rgb(255, 99, 132)',
           data: pHValues,
           fill: false,
-        }],
-      },
-    });
+        },
+        {
+          label: 'Débit eau filtre',
+          borderColor: 'rgb(255, 205, 86)',
+          data: waterFilterFlowValues,
+          fill: false,
+        },
+        {
+          label: 'Turbidité de l\'eau',
+          borderColor: 'rgb(54, 162, 235)',
+          data: waterTurbidityValues,
+          fill: false,
+        },
+        // Add more datasets for other metrics
+      ],
+    },
+  });
     // Add more charts for other metrics
   </script>
 {% endblock %}

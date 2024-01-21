@@ -1,13 +1,15 @@
-from django.shortcuts import render
+from django.shortcuts import render,redirect
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-from .models import SensorData, FCMToken
+from .models import MetricSetting, SensorData, FCMToken
 import json
 import requests
 from django.views.generic import ListView
 from .models import Metric, ChemicalTest, AlertSetting
 from firebase_admin.messaging import Message, Notification
 from fcm_django.models import FCMDevice
+from django.views.generic.edit import FormView
+from .forms import MetricSettingForm
 
 def send_notification(registration_ids , message_title , message_desc):
     fcm_api = "AAAAEno-Ge8:APA91bH0_vKu85-LpVKscoPAQqFJ1PNJvOAHuMh8Qx7VDmJBVmExMV9jIpNoKQ3OYT81_t-15AlRLCNkEwvKIUDOwQI9MAOIpwUqDmFfKtDoSQBjGTp7kSWHigCdTdxHsN0X_vhRCQEN"
@@ -100,6 +102,9 @@ class MetricListView(ListView):
         timestamps = []
         temperatures = []
         ph_values = []
+        water_filter_flow_values = []
+        water_turbidity_values = []
+        light_intensity_values = []
 
         for metric in metrics:
             colored_metric = {
@@ -117,12 +122,18 @@ class MetricListView(ListView):
             timestamps.append(metric.timestamp.strftime('%Y-%m-%d %H:%M:%S'))
             temperatures.append(metric.water_temperature)
             ph_values.append(metric.pH)
+            water_filter_flow_values.append(metric.water_filter_flow)
+            water_turbidity_values.append(metric.water_turbidity)
+            light_intensity_values.append(metric.light_intensity)
 
         context['colored_metrics'] = colored_metrics
         context['timestamps_json'] = json.dumps(timestamps)
         context['temperatures_json'] = json.dumps(temperatures)
         context['ph_values_json'] = json.dumps(ph_values)
-        
+        context['water_filter_flow_values_json'] = json.dumps(water_filter_flow_values)
+        context['water_turbidity_values_json'] = json.dumps(water_turbidity_values)
+        context['light_intensity_values_json'] = json.dumps(light_intensity_values)
+
         return context
 
 def get_intensity_color(intensity):
@@ -133,17 +144,53 @@ def get_intensity_color(intensity):
     else:
         return 'high-intensity-color'
 
-class ChemicalTestView(ListView):
-    model = ChemicalTest
-    template_name = 'chemical_test.html'
+def chemical_tests(request):
+    tests = ChemicalTest.objects.all().order_by('-timestamp')
+    return render(request, 'chemical_tests.html', {'tests': tests})
 
+@csrf_exempt
+def launch_chemical_test(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body.decode('utf-8'))
+            test_name = data.get('testName')
+
+            # Save the chemical test to the database with status 'En cours'
+            chemical_test = ChemicalTest.objects.create(test_name=test_name, result=None, status='En cours')
+            return JsonResponse({'status': 'success', 'test_id': chemical_test.id})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)})
+
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method'})
 class AlertSettingView(ListView):
     model = AlertSetting
     template_name = 'alert_setting.html'
 
 
 def showFirebaseJS(request):
-    data=''
+    data='importScripts("https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js");' \
+         'importScripts("https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js"); ' \
+         'var firebaseConfig = {' \
+         '        apiKey: "AIzaSyAZwYMKiwWzBmQSMc4v4hbF6rjcNCDBXVs",' \
+         '        authDomain: "aquarium-16634.firebaseapp.com",' \
+         '        databaseURL: "https://aquarium-16634.firebaseio.com",' \
+         '        projectId: "aquarium-16634",' \
+         '        storageBucket: "aquarium-16634.appspot.com",' \
+         '        messagingSenderId: "79360301551",' \
+         '        appId: "1:79360301551:web:5ed19cd2cbe4986cfefe1a",' \
+         '        measurementId: "G-5DY4YQWMEB"' \
+         ' };' \
+         'firebase.initializeApp(firebaseConfig);' \
+         'const messaging=firebase.messaging();' \
+         'messaging.setBackgroundMessageHandler(function (payload) {' \
+         '    console.log(payload);' \
+         '    const notification=JSON.parse(payload);' \
+         '    const notificationOption={' \
+         '        body:notification.body,' \
+         '        icon:notification.icon' \
+         '    };' \
+         '    return self.registration.showNotification(payload.notification.title,notificationOption);' \
+         '});'
 
     return HttpResponse(data,content_type="text/javascript")
 
@@ -161,3 +208,81 @@ def save_fcm_token(request):
             return JsonResponse({'status': 'error', 'message': str(e)})
 
     return JsonResponse({'status': 'error', 'message': 'Invalid request method'})
+
+
+class MetricSettingView(FormView):
+    template_name = 'metric_setting.html'
+    form_class = MetricSettingForm
+
+    def form_valid(self, form):
+        # Handle form submission, compare values, and send notifications
+        cleaned_data = form.cleaned_data
+        water_temperature = cleaned_data['water_temperature']
+        air_temperature = cleaned_data['air_temperature']
+        water_filter_flow = cleaned_data['water_filter_flow']
+        pH = cleaned_data['pH']
+        water_turbidity = cleaned_data['water_turbidity']
+        light_intensity = cleaned_data['light_intensity']
+
+        # Compare values with predefined thresholds
+        check_threshold_and_notify('Water Temperature', water_temperature)
+        check_threshold_and_notify('Air Temperature', air_temperature)
+        check_threshold_and_notify('Water Filter Flow', water_filter_flow)
+        check_threshold_and_notify('pH', pH)
+        check_threshold_and_notify('Water Turbidity', water_turbidity)
+        check_threshold_and_notify('Light Intensity', light_intensity)
+
+        # Save the form data to the database
+        MetricSetting.objects.create(
+            water_temperature=water_temperature,
+            air_temperature=air_temperature,
+            water_filter_flow=water_filter_flow,
+            pH=pH,
+            water_turbidity=water_turbidity,
+            light_intensity=light_intensity
+        )
+
+        # Redirect to the success page
+        return redirect('success_view')
+    
+def check_threshold_and_notify(parameter, value):
+    # Check if the value exceeds the threshold and send notification
+    try:
+        alert_setting = AlertSetting.objects.get(parameter=parameter)
+        if value > alert_setting.threshold:
+            # Send notification logic goes here
+            # You can use FCM or any other method to send notifications
+            pass
+    except AlertSetting.DoesNotExist:
+        pass
+
+@csrf_exempt
+def metric_setting(request):
+    if request.method == 'POST':
+        try:
+            # Récupérez les données du formulaire
+            water_temperature = request.POST.get('water_temperature')
+            air_temperature = request.POST.get('air_temperature')
+            water_filter_flow = request.POST.get('water_filter_flow')
+            pH = request.POST.get('pH')
+            water_turbidity = request.POST.get('water_turbidity')
+            light_intensity = request.POST.get('light_intensity')
+
+            # Enregistrez les paramètres dans la base de données
+            MetricSetting.objects.create(
+                water_temperature=water_temperature,
+                air_temperature=air_temperature,
+                water_filter_flow=water_filter_flow,
+                pH=pH,
+                water_turbidity=water_turbidity,
+                light_intensity=light_intensity
+            )
+
+            return JsonResponse({'status': 'success', 'message': 'Paramètres enregistrés avec succès'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)})
+
+    return JsonResponse({'status': 'error', 'message': 'Méthode de requête invalide'})
+
+def success_view(request):
+    return render(request, 'success.html')

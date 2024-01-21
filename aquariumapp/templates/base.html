@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aquarium Dashboard</title>
      <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-messaging.js"></script>
+     <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-messaging-compat.js"></script>
     <!-- Include Bootstrap for styling -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
@@ -20,8 +20,15 @@
   </button>
   <div class="collapse navbar-collapse" id="navbarNav">
     <ul class="navbar-nav">
-      <li>Métrique</li>
-      <li>Tests chimique</li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'metric-list' %}">Métrique</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'metric_setting' %}">Métrique Setting</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'chemical-tests' %}">Tests Chimiques</a>
+      </li>
     </ul>
   </div>
 </nav>
@@ -90,9 +97,52 @@
       console.log("Message received. ", JSON.stringify(payload));
   });
 
+  {% comment %} onBackgroundMessage(messaging, (payload) => {
+    console.log('[firebase-messaging-sw.js] Received background message ', payload);
+    // Customize notification here
+    const notificationTitle = 'Background Message Title';
+    const notificationOptions = {
+      body: 'Background Message body.',
+      icon: '/firebase-logo.png'
+    };
+    self.registration.showNotification(notificationTitle,
+      notificationOptions);
+  }); {% endcomment %}
+</script>
+<script>
+  importScripts('https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js');
+  firebase.initializeApp({
+    apiKey: 'AIzaSyAZwYMKiwWzBmQSMc4v4hbF6rjcNCDBXVs',
+    authDomain: 'aquarium-16634.firebaseapp.com',
+    databaseURL: 'https://aquarium-16634.firebaseio.com',
+    projectId: 'aquarium-16634',
+    storageBucket: 'aquarium-16634.appspot.com',
+    messagingSenderId: '79360301551',
+    appId: '1:79360301551:web:5ed19cd2cbe4986cfefe1a',
+    measurementId: 'G-5DY4YQWMEB',
+  });
+  const messaging = firebase.messaging();
+  messaging.onBackgroundMessage((payload) => {
+    console.log(
+      '[firebase-messaging-sw.js] Received background message ',
+      payload
+    );
+    // Customize notification here
+    const notificationTitle = 'Background Message Title';
+    const notificationOptions = {
+      body: 'Background Message body.',
+      icon: '/firebase-logo.png'
+    };
+  
+    self.registration.showNotification(notificationTitle, notificationOptions);
+  });
+  if ('serviceWorker' in navigator) {
+     window.addEventListener('load', function () {
+       navigator.serviceWorker.register('/firebase-messaging-sw.js');
+     });
+ }
 </script>
 
-<p id="fcmToken"></p>
 <!-- Include Bootstrap and other JS scripts at the end for better performance -->
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
