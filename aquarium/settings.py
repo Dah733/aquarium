@@ -41,9 +41,14 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'aquariumapp',
+<<<<<<< HEAD
     "fcm_django",
     # "push_notifications",
     "django_extensions"
+=======
+    "fcm_django"
+    # "push_notifications"
+>>>>>>> 534e5b2fd678da146c0e7738e480e816a06dc841
 ]
 
 MIDDLEWARE = [
