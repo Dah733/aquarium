@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <div class="container mt-4">
+    <h1 class="mb-4">Paramétrage des valeurs métriques</h1>
+
+    <form method="post" action="{% url 'metric_setting' %}" class="needs-validation" novalidate>
+      {% csrf_token %}
+      <div class="mb-3">
+        <label for="water_temperature" class="form-label">Température de l'eau</label>
+        <input type="number" step="0.01" class="form-control" id="water_temperature" name="water_temperature" required>
+      </div>
+      <div class="mb-3">
+        <label for="air_temperature" class="form-label">Température de l'air</label>
+        <input type="number" step="0.01" class="form-control" id="air_temperature" name="air_temperature" required>
+      </div>
+      <div class="mb-3">
+        <label for="water_filter_flow" class="form-label">Débit eau filtre</label>
+        <input type="number" step="0.01" class="form-control" id="water_filter_flow" name="water_filter_flow" required>
+      </div>
+      <div class="mb-3">
+        <label for="pH" class="form-label">pH</label>
+        <input type="number" step="0.01" class="form-control" id="pH" name="pH" required>
+      </div>
+      <div class="mb-3">
+        <label for="water_turbidity" class="form-label">Turbidité de l'eau</label>
+        <input type="number" step="0.01" class="form-control" id="water_turbidity" name="water_turbidity" required>
+      </div>
+      <div class="mb-3">
+        <label for="light_intensity" class="form-label">Intensité lumineuse</label>
+        <input type="number" step="0.01" class="form-control" id="light_intensity" name="light_intensity" required>
+      </div>
+      <button type="submit" class="btn btn-primary">Définir les métriques</button>
+    </form>
+  </div>
+{% endblock %}

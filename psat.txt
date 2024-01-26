@@ -1,0 +1,51 @@
+#include <ESP8266WiFi.h>
+#include <ESP8266HTTPClient.h>
+
+const char* ssid = "SSID";
+const char* password = "Mot_De_Passe";
+const char* serverURL = "https:/aquarium-production.up.railway.app/receive_data_from_aquarium
+
+void setup() {
+  Serial.begin(115200);
+  WiFi.begin(ssid, password);
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(1000);
+    Serial.println("Connecting to WiFi..");
+  }
+
+  Serial.println("Connected to WiFi");
+}
+
+void loop() {
+
+  if(WiFi.status() == WL_CONNECTED) {
+      // Envoi des données des capteurs
+      sendDataToAPP();
+    } 
+  }
+
+  delay(5000);
+}
+
+void sendDataToAPP() {
+  HTTPClient http;
+
+  http.begin(serverURL);
+  http.addHeader("Content-Type", "application/json");
+
+  // Modifiez ces lignes pour envoyer les données nécessaires depuis l'Arduino
+  String data = "{\"parametre\": \"valeur\"}";
+
+  int httpResponseCode = http.POST(data);
+
+  if (httpResponseCode > 0) {
+    Serial.print("Réponse du serveur : ");
+    Serial.println(httpResponseCode);
+  } else {
+    Serial.print("Erreur lors de l'envoi de la requête HTTP !");
+  }
+
+  http.end();
+}
+

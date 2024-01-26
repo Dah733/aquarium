@@ -1,0 +1,1 @@
+web: gunicorn aquarium.wsgi --log-file -
